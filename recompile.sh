@@ -6,7 +6,10 @@ set -euo pipefail
 VCPKG_PATH=${1:-"$HOME"}
 VCPKG_PATH=$VCPKG_PATH/vcpkg/scripts/buildsystems/vcpkg.cmake
 ARCHITECTURE=$(uname -m)
-if [[ $ARCHITECTURE == "aarch64"* ]]; then
+OS=$(uname -s)
+if [[ $OS == "Darwin" ]]; then
+	BUILD_TYPE=${2:-"macos-release"}
+elif [[ $ARCHITECTURE == "aarch64"* ]]; then
 	BUILD_TYPE=${2:-"arm64-linux-release"}
 else
 	BUILD_TYPE=${2:-"linux-release"}
@@ -27,7 +30,9 @@ check_command() {
 }
 
 check_architecture() {
-	if [[ $ARCHITECTURE == "aarch64"* ]]; then
+	if [[ $OS == "Darwin" ]]; then
+		info "its architecture is $ARCHITECTURE (macOS)"
+	elif [[ $ARCHITECTURE == "aarch64"* ]]; then
 		info "its architecture is $ARCHITECTURE (ARM)"
 		ARCHITECTUREVALUE=1
 	else
@@ -39,9 +44,9 @@ check_architecture() {
 setup_canary() {
 	if [ -d "build" ]; then
 		cd build
+		info "Build directory already exists, reusing it..."
 	else
 		mkdir -p build && cd build
-		info "Canary has already been configured, skipping this step..."
 	fi
 }
 
